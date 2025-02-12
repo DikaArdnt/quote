@@ -1,0 +1,40 @@
+{
+  "name": "quote-chat",
+  "version": "1.0.0",
+  "description": "Fake Chat Telegram",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "bun run src/index.js",
+    "lint": "eslint src --ext .js,.ts",
+    "lint:fix": "npm run lint --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DikaArdnt/quote.git"
+  },
+  "keywords": [
+    "quote-chat",
+    "quote",
+    "fake-chat"
+  ],
+  "author": "DikaArdnt",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DikaArdnt/quote/issues"
+  },
+  "homepage": "https://github.com/DikaArdnt/quote#readme",
+  "dependencies": {
+    "canvas": "^3.1.0",
+    "emoji-regex": "^10.4.0",
+    "hono": "^4.7.0",
+    "marked": "^15.0.7",
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.20.0",
+    "@types/bun": "^1.2.2",
+    "eslint": "^9.20.1",
+    "globals": "^15.14.0"
+  }
+}

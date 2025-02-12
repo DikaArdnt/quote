@@ -1,0 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+/* Global Styles */
+body {
+	font-family: 'Inter', sans-serif;
+	max-width: 900px;
+	margin: 40px auto;
+	line-height: 1.7;
+	background-color: #0d1117;
+	color: #c9d1d9;
+	padding: 20px;
+}
+
+/* Headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	color: #e6edf3;
+	font-weight: 600;
+}
+
+/* Links */
+a {
+	color: #58a6ff;
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+/* Blockquote */
+blockquote {
+	border-left: 4px solid #8b949e;
+	color: #8b949e;
+	padding: 10px 20px;
+	margin: 20px 0;
+	background-color: rgba(139, 148, 158, 0.1);
+	border-radius: 6px;
+}
+
+/* Code Blocks */
+pre {
+	background: #161b22;
+	padding: 15px;
+	border-radius: 8px;
+	overflow-x: auto;
+	font-size: 14px;
+	line-height: 1.45;
+	border: 1px solid #30363d;
+}
+
+code {
+	font-family: 'Fira Code', monospace;
+	background: #161b22;
+	padding: 2px 6px;
+	border-radius: 4px;
+	font-size: 14px;
+}
+
+/* Inline code */
+p code {
+	background: rgba(110, 118, 129, 0.4);
+	color: #e6edf3;
+}
+
+/* Tables */
+table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 20px 0;
+}
+
+th,
+td {
+	border: 1px solid #30363d;
+	padding: 10px;
+}
+
+th {
+	background: #161b22;
+	color: #e6edf3;
+	font-weight: 600;
+}
+
+/* Lists */
+ul,
+ol {
+	padding-left: 20px;
+}
+
+ul li::marker {
+	color: #58a6ff;
+}
+
+/* Horizontal Rule */
+hr {
+	border: none;
+	border-top: 1px solid #30363d;
+	margin: 20px 0;
+}
+
+img {
+	max-width: 100%;
+}
+
+/* Scrollbar */
+*::-webkit-scrollbar {
+	width: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+	background: #30363d;
+	border-radius: 4px;
+}
+
+*::-webkit-scrollbar-track {
+	background: #0d1117;
+}
