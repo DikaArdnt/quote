@@ -27,13 +27,13 @@ jobs:
          - name: Get latest commit SHA from source repo
            id: latest_version
            run: |
-               LATEST_SHA=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/iamcal/emoji-data/commits?path=img-apple-64&per_page=1 | jq -r '.[0].sha')
-               echo "latest_sha=$LATEST_SHA" >> $GITHUB_ENV
-         
+               response=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/iamcal/emoji-data/commits?path=img-apple-64&per_page=1)
+               echo "::set-output name=sha::$(jq -r '.[0].sha' <<< "$response")"
+
          - name: Check if update needed
            id: check_update
            run: |
-               if [ "${{ steps.current_version.outputs.version }}" != "${{ env.latest_sha }}" ]; then
+               if [ "${{ steps.current_version.outputs.version }}" != "${{ steps.latest_version.outputs.sha }}" ]; then
                   echo "needs_update=true" >> $GITHUB_OUTPUT
                else
                   echo "needs_update=false" >> $GITHUB_OUTPUT
@@ -53,7 +53,7 @@ jobs:
                done
                
                # Save version
-               echo "${{ env.latest_sha }}" > .version
+               echo "${{ steps.latest_version.outputs.sha }}" > .version
          
          - name: Commit and push changes
            if: steps.check_update.outputs.needs_update == 'true'
@@ -61,5 +61,5 @@ jobs:
                git config --local user.email "github-actions[bot]@users.noreply.github.com"
                git config --local user.name "github-actions[bot]"
                git add assets/img-emoji-apple/
-               git commit -m "Update emoji apple images - ${{ env.latest_sha }}"
+               git commit -m "Update emoji apple images - ${{ steps.latest_version.outputs.sha }}"
                git push
