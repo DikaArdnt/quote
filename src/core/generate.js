@@ -2,9 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
 import emojiRegex from 'emoji-regex';
+import { createCanvas, loadImage } from 'canvas';
 import smartcrop from '../utils/crop.js';
 import runes from '../utils/runes.js';
-import { createCanvas, loadImage } from 'canvas';
+import loadFileFromURL from '../utils/loadFileFromURL.js';
 
 const emojiDir = path.join(process.cwd(), 'assets', 'img-emoji-apple');
 if (!fs.existsSync(emojiDir)) {
@@ -89,8 +90,8 @@ class QuoteGenerate {
 			throw new Error('Emoji code is required');
 		}
 
-		if (typeof code !== "string") {
-			throw new Error("Emoji code is a string")
+		if (typeof code !== 'string') {
+			throw new Error('Emoji code is a string');
 		}
 
 		const emojiFile = path.join(emojiDir, code + '.png');
@@ -224,7 +225,16 @@ class QuoteGenerate {
 					else avatarImage = await loadImage(await this.avatarImageLatters(nameLatters, avatarColor));
 				}
 
-				if (userPhotoUrl) avatarImage = await loadImage(userPhotoUrl);
+				if (userPhotoUrl) {
+					const imageBuffer = await loadFileFromURL(userPhotoUrl).catch(error => {
+						console.warn('Failed to load user photo from URL:', error.message);
+						return null;
+					});
+
+					if (imageBuffer) {
+						avatarImage = await loadImage(imageBuffer);
+					}
+				}
 
 				avatarCache.set(cacheKey, avatarImage);
 			} catch {
