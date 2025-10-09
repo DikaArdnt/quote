@@ -1,0 +1,65 @@
+name: Emoji Apple Update
+
+on:
+   schedule:
+      - cron: '0 0 * * *'  # Runs daily at midnight
+   workflow_dispatch:  # Allows manual trigger
+
+jobs:
+   update-emoji:
+      runs-on: ubuntu-latest
+      
+      steps:
+         - name: Checkout repository
+           uses: actions/checkout@v4
+           with:
+               token: ${{ secrets.GITHUB_TOKEN }}
+         
+         - name: Get current version
+           id: current_version
+           run: |
+               if [ -f "assets/img-emoji-apple/.version" ]; then
+                  echo "version=$(cat assets/img-emoji-apple/.version)" >> $GITHUB_OUTPUT
+               else
+                  echo "version=0" >> $GITHUB_OUTPUT
+               fi
+         
+         - name: Get latest commit SHA from source repo
+           id: latest_version
+           run: |
+               LATEST_SHA=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/iamcal/emoji-data/commits?path=img-apple-64&per_page=1 | jq -r '.[0].sha')
+               echo "sha=$LATEST_SHA" >> $GITHUB_OUTPUT
+         
+         - name: Check if update needed
+           id: check_update
+           run: |
+               if [ "${{ steps.current_version.outputs.version }}" != "${{ steps.latest_version.outputs.sha }}" ]; then
+                  echo "needs_update=true" >> $GITHUB_OUTPUT
+               else
+                  echo "needs_update=false" >> $GITHUB_OUTPUT
+               fi
+         
+         - name: Download emoji images
+           if: steps.check_update.outputs.needs_update == 'true'
+           run: |
+               cd assets/img-emoji-apple
+               
+               # Get list of files from the folder
+               FILES=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/iamcal/emoji-data/contents/img-apple-64 | jq -r '.[] | select(.type=="file") | .download_url')
+               
+               # Download each file
+               for file_url in $FILES; do
+                  wget -q "$file_url"
+               done
+               
+               # Save version
+               echo "${{ steps.latest_version.outputs.sha }}" > .version
+         
+         - name: Commit and push changes
+           if: steps.check_update.outputs.needs_update == 'true'
+           run: |
+               git config --local user.email "github-actions[bot]@users.noreply.github.com"
+               git config --local user.name "github-actions[bot]"
+               git add assets/img-emoji-apple/
+               git commit -m "Update emoji apple images - ${{ steps.latest_version.outputs.sha }}"
+               git push

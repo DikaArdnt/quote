@@ -1,12 +1,17 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import sharp from 'sharp';
 import emojiRegex from 'emoji-regex';
 import smartcrop from '../utils/crop.js';
 import runes from '../utils/runes.js';
 import { createCanvas, loadImage } from 'canvas';
 
+const emojiDir = path.join(process.cwd(), 'assets', 'img-emoji-apple');
+if (!fs.existsSync(emojiDir)) {
+	fs.mkdirSync(emojiDir, { recursive: true });
+}
+
 const avatarCache = new Map();
-const emojiImageJson = JSON.parse(fs.readFileSync('./assets/json/emoji-apple.json'));
 
 // disable SIMD for avoid sharp crash
 sharp.simd(false);
@@ -79,6 +84,24 @@ class QuoteGenerate {
 		this.telegramToken = botToken;
 	}
 
+	loadEmoji(code) {
+		if (!code) {
+			throw new Error('Emoji code is required');
+		}
+
+		if (typeof code !== "string") {
+			throw new Error("Emoji code is a string")
+		}
+
+		const emojiFile = path.join(emojiDir, code + '.png');
+		if (!fs.existsSync(emojiFile)) {
+			return undefined;
+		}
+
+		const data = fs.readFileSync(emojiFile);
+		return data;
+	}
+
 	findEmoji(text) {
 		// Regex pattern for matching emoji characters
 		const regex = emojiRegex();
@@ -132,7 +155,11 @@ class QuoteGenerate {
 
 		const drawLetters = await this.drawMultilineText(letters, null, size / 2, '#FFF', 0, size, size * 5, size * 5);
 
-		context.drawImage(drawLetters, (canvas.width - drawLetters.width) / 2, (canvas.height - drawLetters.height) / 1.5);
+		context.drawImage(
+			drawLetters,
+			(canvas.width - drawLetters.width) / 2,
+			(canvas.height - drawLetters.height) / 1.5
+		);
 
 		return canvas.toBuffer();
 	}
@@ -176,8 +203,12 @@ class QuoteGenerate {
 				let userPhoto, userPhotoUrl;
 
 				if (user.photo && user.photo.big_file_id) {
-					const fileInfo = await this.callTelegramApi('getFile', { file_id: user.photo.big_file_id }).catch(() => null);
-					userPhotoUrl = fileInfo ? `https://api.telegram.org/file/bot${this.telegramToken}/${fileInfo.file_path}` : null;
+					const fileInfo = await this.callTelegramApi('getFile', { file_id: user.photo.big_file_id }).catch(
+						() => null
+					);
+					userPhotoUrl = fileInfo
+						? `https://api.telegram.org/file/bot${this.telegramToken}/${fileInfo.file_path}`
+						: null;
 				}
 
 				if (!userPhotoUrl) {
@@ -186,7 +217,9 @@ class QuoteGenerate {
 
 					if (userPhoto) {
 						const fileInfo = await this.callTelegramApi('getFile', { file_id: userPhoto }).catch(() => null);
-						userPhotoUrl = fileInfo ? `https://api.telegram.org/file/bot${this.telegramToken}/${fileInfo.file_path}` : null;
+						userPhotoUrl = fileInfo
+							? `https://api.telegram.org/file/bot${this.telegramToken}/${fileInfo.file_path}`
+							: null;
 					} else if (user.username) userPhotoUrl = `https://telega.one/i/userpic/320/${user.username}.jpg`;
 					else avatarImage = await loadImage(await this.avatarImageLatters(nameLatters, avatarColor));
 				}
@@ -316,7 +349,18 @@ class QuoteGenerate {
 
 				if (['pre', 'code', 'pre_code'].includes(entity.type)) {
 					style.push('monospace');
-				} else if (['mention', 'text_mention', 'hashtag', 'email', 'phone_number', 'bot_command', 'url', 'text_link'].includes(entity.type)) {
+				} else if (
+					[
+						'mention',
+						'text_mention',
+						'hashtag',
+						'email',
+						'phone_number',
+						'bot_command',
+						'url',
+						'text_link',
+					].includes(entity.type)
+				) {
 					style.push('mention');
 				} else {
 					style.push(entity.type);
@@ -400,7 +444,9 @@ class QuoteGenerate {
 			}
 		}
 
-		const getCustomEmojiStickers = await this.callTelegramApi('getCustomEmojiStickers', { custom_emoji_ids: customEmojiIds }).catch(() => {});
+		const getCustomEmojiStickers = await this.callTelegramApi('getCustomEmojiStickers', {
+			custom_emoji_ids: customEmojiIds,
+		}).catch(() => {});
 
 		const customEmojiStickers = {};
 
@@ -442,12 +488,9 @@ class QuoteGenerate {
 				if (styledWord.customEmojiId && customEmojiStickers[styledWord.customEmojiId]) {
 					emojiImage = customEmojiStickers[styledWord.customEmojiId];
 				} else {
-					const emojiImageBase = emojiImageJson[styledWord.emoji.code];
-					if (emojiImageBase) {
-						emojiImage = await loadImage(Buffer.from(emojiImageBase, 'base64')).catch(() => {});
-					}
-					if (!emojiImage) {
-						emojiImage = await loadImage(Buffer.from(emojiImageJson[styledWord.emoji.code], 'base64')).catch(() => {});
+					const emojiImageData = this.loadEmoji(styledWord.emoji.code);
+					if (emojiImageData) {
+						emojiImage = await loadImage(emojiImageData).catch(() => {});
 					}
 				}
 			}
@@ -497,7 +540,10 @@ class QuoteGenerate {
 
 			if (styledWord.word.match(breakMatch) || (lineWidth > maxWidth - fontSize * 2 && wordlWidth < maxWidth)) {
 				if (styledWord.word.match(spaceMatch) && !styledWord.word.match(breakMatch)) styledWord.word = '';
-				if ((styledWord.word.match(spaceMatch) || !styledWord.word.match(breakMatch)) && lineY + lineHeight > maxHeight) {
+				if (
+					(styledWord.word.match(spaceMatch) || !styledWord.word.match(breakMatch)) &&
+					lineY + lineHeight > maxHeight
+				) {
 					while (lineWidth > maxWidth - fontSize * 2) {
 						styledWord.word = styledWord.word.substr(0, styledWord.word.length - 1);
 						lineWidth = lineX + canvasCtx.measureText(styledWord.word).width;
@@ -529,12 +575,23 @@ class QuoteGenerate {
 			let wordX = lineDirection == 'rtl' ? maxWidth - lineX - wordlWidth - fontSize * 2 : lineX;
 
 			if (emojiImage) {
-				canvasCtx.drawImage(emojiImage, wordX, lineY - fontSize + fontSize * 0.15, fontSize + fontSize * 0.22, fontSize + fontSize * 0.22);
+				canvasCtx.drawImage(
+					emojiImage,
+					wordX,
+					lineY - fontSize + fontSize * 0.15,
+					fontSize + fontSize * 0.22,
+					fontSize + fontSize * 0.22
+				);
 			} else {
 				canvasCtx.fillText(styledWord.word, wordX, lineY);
 
 				if (styledWord.style.includes('strikethrough'))
-					canvasCtx.fillRect(wordX, lineY - fontSize / 2.8, canvasCtx.measureText(styledWord.word).width, fontSize * 0.1);
+					canvasCtx.fillRect(
+						wordX,
+						lineY - fontSize / 2.8,
+						canvasCtx.measureText(styledWord.word).width,
+						fontSize * 0.1
+					);
 				if (styledWord.style.includes('underline'))
 					canvasCtx.fillRect(wordX, lineY + 2, canvasCtx.measureText(styledWord.word).width, fontSize * 0.1);
 			}
@@ -594,7 +651,9 @@ class QuoteGenerate {
 		 * @type {{ text: string, type: string, length: number }[]}
 		 */
 		const results = [];
-		const markers = formattingMarkers.map(v => (v.marker instanceof RegExp ? '' : regexForMarker(v.marker, v.noEndMarker))).filter(Boolean);
+		const markers = formattingMarkers
+			.map(v => (v.marker instanceof RegExp ? '' : regexForMarker(v.marker, v.noEndMarker)))
+			.filter(Boolean);
 
 		formattingMarkers.forEach(({ marker, noEndMarker, keepMarker, type }) => {
 			let regex = marker instanceof RegExp ? marker : regexForMarker(marker, noEndMarker);
@@ -932,7 +991,13 @@ class QuoteGenerate {
 			if (backgroundColorOne === backgroundColorTwo) {
 				rect = this.drawRoundRect(backgroundColorOne, rectWidth, rectHeight, rectRoundRadius);
 			} else {
-				rect = this.drawGradientRoundRect(backgroundColorOne, backgroundColorTwo, rectWidth, rectHeight, rectRoundRadius);
+				rect = this.drawGradientRoundRect(
+					backgroundColorOne,
+					backgroundColorTwo,
+					rectWidth,
+					rectHeight,
+					rectRoundRadius
+				);
 			}
 		}
 
@@ -943,7 +1008,11 @@ class QuoteGenerate {
 		if (media) canvasCtx.drawImage(this.roundImage(media, 5 * scale), mediaPosX, mediaPosY, mediaWidth, mediaHeight);
 
 		if (replyName) {
-			canvasCtx.drawImage(this.deawReplyLine(3 * scale, replyName.height + replyText.height * 0.4, replyNameColor), textPosX - 3, replyNamePosY);
+			canvasCtx.drawImage(
+				this.deawReplyLine(3 * scale, replyName.height + replyText.height * 0.4, replyNameColor),
+				textPosX - 3,
+				replyNamePosY
+			);
 
 			canvasCtx.drawImage(replyName, replyPosX, replyNamePosY);
 			canvasCtx.drawImage(replyText, replyPosX, replyTextPosY);
@@ -978,7 +1047,15 @@ class QuoteGenerate {
 		return 'ltr';
 	}
 
-	async generate(backgroundColorOne, backgroundColorTwo, message, width = 512, height = 512, scale = 2, emojiBrand = 'apple') {
+	async generate(
+		backgroundColorOne,
+		backgroundColorTwo,
+		message,
+		width = 512,
+		height = 512,
+		scale = 2,
+		emojiBrand = 'apple'
+	) {
 		if (!scale) scale = 2;
 		if (scale > 20) scale = 20;
 		width *= scale;
@@ -1044,7 +1121,17 @@ class QuoteGenerate {
 				});
 			}
 
-			nameCanvas = await this.drawMultilineText(name, nameEntities, nameSize, nameColor, 0, nameSize, width, nameSize, emojiBrand);
+			nameCanvas = await this.drawMultilineText(
+				name,
+				nameEntities,
+				nameSize,
+				nameColor,
+				0,
+				nameSize,
+				width,
+				nameSize,
+				emojiBrand
+			);
 		}
 
 		let fontSize = 24 * scale;
