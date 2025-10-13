@@ -1,4 +1,5 @@
 import https from 'https';
+import http from 'http';
 
 export default (url, filter = false) => {
 	return new Promise((resolve, reject) => {
@@ -7,7 +8,9 @@ export default (url, filter = false) => {
 			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0',
 		};
 
-		https.get(options, res => {
+		const protocol = url.startsWith('https:') ? https : http;
+
+		protocol.get(options, res => {
 			if (filter && filter(res.headers)) {
 				resolve(Buffer.concat([]));
 			}
@@ -23,6 +26,8 @@ export default (url, filter = false) => {
 			res.on('end', () => {
 				resolve(Buffer.concat(chunks));
 			});
+		}).on('error', err => {
+			reject(err);
 		});
 	});
 };
