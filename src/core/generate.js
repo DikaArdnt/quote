@@ -198,7 +198,14 @@ class QuoteGenerate {
 		if (avatarImageCache) {
 			avatarImage = avatarImageCache;
 		} else if (user.photo && user.photo.url) {
-			avatarImage = await loadImage(encodeURI(user.photo.url));
+			const imageBuffer = await loadFileFromURL(encodeURI(user.photo.url)).catch(error => {
+				console.warn('Failed to load user photo from URL:', error.message);
+				return null;
+			});
+
+			if (imageBuffer) {
+				avatarImage = await loadImage(imageBuffer);
+			}
 		} else {
 			try {
 				let userPhoto, userPhotoUrl;
@@ -252,8 +259,7 @@ class QuoteGenerate {
 			mediaUrl = fileInfo ? `https://api.telegram.org/file/bot${this.telegramToken}/${fileInfo.file_path}` : null;
 		} else mediaUrl = media;
 
-		const res = await fetch(mediaUrl);
-		const mediaData = await res.arrayBuffer();
+		const mediaData = await loadFileFromURL(encodeURI(mediaUrl)).catch(() => null);
 
 		if (crop || mediaUrl.match(/.webp/)) {
 			const imageSharp = sharp(mediaData);
@@ -473,8 +479,7 @@ class QuoteGenerate {
 							.catch(() => null);
 
 						if (getFileLink) {
-							const res = await fetch(getFileLink);
-							const mediaData = await res.arrayBuffer();
+							const mediaData = await loadFileFromURL(encodeURI(getFileLink)).catch(() => null);
 							const imageSharp = sharp(mediaData);
 							const sharpPng = await imageSharp.png({ lossless: true, force: true }).toBuffer();
 

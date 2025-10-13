@@ -80,7 +80,7 @@ POST /
 				"entities": "auto"
 			},
 			"media": {
-				"url": "https://quote.kua.lat/hisoka.png"
+				"url": "https://quote.kua.lat/hisoka.jpg"
 			}
 		}
 	]

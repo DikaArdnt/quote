@@ -54,8 +54,14 @@ app.get('/', async c => {
 
 	return c.html(`<html>
       <head>
-        	<title>Documentation</title>
+        	<title>Quote API Documentation</title>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
+		  	<meta charset="utf-8">
+		  	<meta name="description" content="An Quote API Telegram fast, simple, and free.">
+			<meta name="keywords" content="quote api, telegram quote api, quote maker, quote generator, hisoka labs, kualat">
+			<meta name="author" content="Hisoka Labs">
         	<link rel="stylesheet" href="/styles.css">
+			<link rel="icon" type="image/png" href="/favicon.png">
 		  	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
 			<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
 		</head>
@@ -78,7 +84,8 @@ app.post('/', async c => {
 		const data = await Quote(body);
 
 		return c.json(data);
-	} catch {
+	} catch (e) {
+		console.error(e);
 		return c.json({ status: false, message: 'Invalid JSON' }, 400);
 	}
 });
