@@ -90,6 +90,11 @@ app.post('/', async c => {
 	}
 });
 
+app.get('/status', c => {
+	const uptime = process.uptime();
+	return c.json({ status: true, message: 'Quote API is running', uptime: new Date(uptime * 1000).toISOString().slice(11, 19) });
+});
+
 export default {
 	port: process.env.PORT || 3000,
 	fetch: app.fetch,
