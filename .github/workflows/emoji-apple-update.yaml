@@ -1,8 +1,8 @@
 name: Emoji Apple Update
 
 on:
-   schedule:
-      - cron: '0 0 * * 0'  # Runs weekly at midnight on Sunday
+   # schedule:
+      # - cron: '0 0 * * 0'  # Runs weekly at midnight on Sunday
    workflow_dispatch:  # Allows manual trigger
 
 jobs:
