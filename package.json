@@ -6,9 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "bun run src/index.js",
-    "dev": "bun run --watch src/index.js",
-    "lint": "eslint src --ext .js,.ts",
-    "lint:fix": "npm run lint --fix"
+    "dev": "bun run --watch src/index.js"
   },
   "repository": {
     "type": "git",
@@ -26,16 +24,15 @@
   },
   "homepage": "https://github.com/DikaArdnt/quote#readme",
   "dependencies": {
+    "cache-manager": "^7.2.8",
     "canvas": "^3.2.0",
     "emoji-regex": "^10.6.0",
+    "fastq": "^1.20.1",
     "hono": "^4.9.12",
-    "marked": "^16.4.0",
+    "marked": "^17.0.4",
     "sharp": "^0.34.4"
   },
   "devDependencies": {
-    "@eslint/js": "^9.37.0",
-    "@types/bun": "^1.3.0",
-    "eslint": "^9.37.0",
-    "globals": "^16.4.0"
+    "@types/bun": "^1.3.10"
   }
 }

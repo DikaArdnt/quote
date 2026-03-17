@@ -1,8 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
+
 import sharp from 'sharp';
 import emojiRegex from 'emoji-regex';
 import { createCanvas, loadImage } from 'canvas';
+
 import smartcrop from '../utils/crop.js';
 import runes from '../utils/runes.js';
 import loadFileFromURL from '../utils/loadFileFromURL.js';

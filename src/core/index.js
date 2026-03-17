@@ -1,6 +1,7 @@
+import fs from 'node:fs';
+
 import { createCanvas, loadImage } from 'canvas';
 import sharp from 'sharp';
-import fs from 'node:fs';
 
 // disable SIMD for avoid sharp crash
 sharp.simd(false);
