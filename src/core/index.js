@@ -54,17 +54,17 @@ export default async parm => {
 	if (!parm) return { error: 'query_empty' };
 	if (!parm.messages || parm.messages.length < 1) return { error: 'messages_empty' };
 	if (
-		parm.background &&
+		parm.backgroundImage &&
 		!/(http(s)?:\/\/.)?(www\.)?(localhost|[-a-zA-Z0-9@:%._+~#=]{1,256})(\.[a-z]{2,8}|:\d{1,5})\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/gim.test(
-			parm.background
+			parm.backgroundImage
 		)
 	)
-		return { message: 'Invalid background URL' };
+		return { message: 'Invalid backgroundImage URL' };
 
 	let botToken = parm.botToken || process.env.TELE_TOKEN;
 
 	const patternImgs = fs.readdirSync('./assets/image').filter(v => v.startsWith('pattern') && /\.(png|jpg|jpeg)/.test(v));
-	const patternImg = parm.background || `./assets/image/${patternImgs[Math.floor(Math.random() * patternImgs.length)]}`;
+	const patternImg = parm.backgroundImage || `./assets/image/${patternImgs[Math.floor(Math.random() * patternImgs.length)]}`;
 	const quoteGenerate = new QuoteGenerate(botToken);
 
 	const quoteImages = [];

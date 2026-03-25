@@ -12,6 +12,7 @@ POST /
 | :-------------- | :----- | :------------------------------------------------------------------------------- |
 | type            | string | Output Image Type. Can be: quote, image, stories, null									  |
 | backgroundColor | string | The background color of the quote. Can be Hex, name or random for a random color |
+| backgroundImage | string | The background image of the quote. Can be a URL or base64 encoded image. 		  |
 | messages        | array  | Array of messages                                                                |
 | width           | number | Maximum width                                                                    |
 | height          | number | Maximum height                                                                   |
